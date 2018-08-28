@@ -53,8 +53,10 @@ class MainWindow(QtWidgets.QMainWindow):
         }
 
         # TODO test
+        #self.ui.searchLineEdit.setText(
+        #    "https://www.youtube.com/watch?v=8GW6sLrK40k&list=PLit8GzUQ7d7F0Lf2WNNL754TYQHb23b8t&t=0s&index=2")
         self.ui.searchLineEdit.setText(
-            "https://www.youtube.com/watch?v=8GW6sLrK40k&list=PLit8GzUQ7d7F0Lf2WNNL754TYQHb23b8t&t=0s&index=2")
+            "https://www.youtube.com/watch?v=IrjizI0wsXU")
         # TODO test
         self.search()
 
@@ -95,13 +97,14 @@ class MainWindow(QtWidgets.QMainWindow):
         path = '/home/marek/Desktop'
 
         if path and self.videos:
+
             self.thread = QThread()
             self.ddd = Downloader(path, self.videos, self.mp3_options)
 
             self.ddd.moveToThread(self.thread)
             self.thread.started.connect(self.ddd.download)
             self.download_is_running(True)
-            self.thread.finished.connect(lambda: self.download_is_running(False))
+            self.ddd.finished.connect(lambda: self.download_is_running(False))
 
             self.thread.start()
 
@@ -170,8 +173,8 @@ class MainWindow(QtWidgets.QMainWindow):
             # I add it to the list
             self.ui.listWidget.addItem(Item)
             # self.items.append(Item)
-            # video.checkbox = Item.getCheckBox()
-            # video.line_edit = Item.getLineEdit()
+            video.checkbox = Item_Widget.getCheckBox()
+            video.line_edit = Item_Widget.getLineEdit()
 
             self.ui.listWidget.setItemWidget(Item, Item_Widget)
 
@@ -183,9 +186,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.checked = False
         self.show_list()
 
-    def update_titles(self):
-        for v in self.videos:
-            v.title = v.line_edit.text()
-
     def download_is_running(self, is_running):
+        print(not is_running)
         self.ui.downloadButton.setEnabled(not is_running)
+
+    def jebanko(self):
+        print("jebanko")

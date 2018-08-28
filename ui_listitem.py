@@ -76,4 +76,3 @@ class Ui_Form(object):
         self.lineEdit.setText(_translate("Form", "Tekst"))
         self.labelLenght.setText(_translate("Form", "TextLabel"))
         self.checkBox.setWhatsThis(_translate("Form", "m"))
-

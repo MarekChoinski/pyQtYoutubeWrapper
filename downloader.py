@@ -5,8 +5,9 @@ import youtube_dl as yt
 
 class Downloader(QObject):
     # Create the signal
-    finished = pyqtSignal()
+
     intReady = pyqtSignal(int)
+    finished = pyqtSignal()
 
     def __init__(self, path, videos, options, parent=None):
         super(Downloader, self).__init__(parent)
@@ -15,6 +16,8 @@ class Downloader(QObject):
         self.videos = videos
         self.options = options
 
+
+
         # Connect signal to the desired function
         # self.sig.connect(updateProgBar)
 
@@ -22,11 +25,12 @@ class Downloader(QObject):
     def download(self):
 
         for video in self.videos:
-            if True:  # checkbox
+            if True:#video.is_checked():  # checkbox
 
                 self.options['outtmpl'] = self.path + '/' + video.title + '.%(ext)s'
 
                 with yt.YoutubeDL(self.options) as ydl:
                     ydl.download([video.url])
 
+        print('no emituj')
         self.finished.emit()
