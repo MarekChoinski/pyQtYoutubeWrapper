@@ -23,9 +23,10 @@ class Downloader(QObject):
 
         for video in self.videos:
             if True:  # checkbox
-                print(video.url, " !! ")
 
                 self.options['outtmpl'] = self.path + '/' + video.title + '.%(ext)s'
 
                 with yt.YoutubeDL(self.options) as ydl:
                     ydl.download([video.url])
+
+        self.finished.emit()

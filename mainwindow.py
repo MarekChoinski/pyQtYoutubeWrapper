@@ -42,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.ydl = yt.YoutubeDL()
 
         self.mp3_options = {
-            'format': 'bestaudio', # 'bestaudio/best',
+            'format': 'bestaudio',  # 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
@@ -98,9 +98,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.thread = QThread()
             self.ddd = Downloader(path, self.videos, self.mp3_options)
 
-
             self.ddd.moveToThread(self.thread)
             self.thread.started.connect(self.ddd.download)
+            self.download_is_running(True)
+            self.thread.finished.connect(lambda: self.download_is_running(False))
 
             self.thread.start()
 
@@ -185,3 +186,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_titles(self):
         for v in self.videos:
             v.title = v.line_edit.text()
+
+    def download_is_running(self, is_running):
+        self.ui.downloadButton.setEnabled(not is_running)
