@@ -2,8 +2,8 @@ import sys
 from os.path import expanduser
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread
-from PyQt5.QtWidgets import QWidget, QApplication
+from PyQt5.QtCore import QThread, pyqtSlot
+from PyQt5.QtWidgets import QWidget, QApplication, QAbstractItemView
 
 import youtube_dl as yt
 import pprint
@@ -22,12 +22,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # checkboxes
-        self.checked = True
-        self.checkboxes = []
+        # this variables declares which state should be setted by check_all-button
+        self.checked_all = False
 
-        # items
-        self.items = []
+        # thread
+        self.thread = None
+        self.downloader = None
 
         # videos
         self.videos = []
@@ -38,8 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.checkAllButton.clicked.connect(self.check_all)
         self.ui.cleanButton.clicked.connect(self.clean_list)
 
-        # youtube-dl
-        # self.ydl = yt.YoutubeDL()
+        self.ui.listWidget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
 
         self.mp3_options = {
             'format': 'bestaudio',  # 'bestaudio/best',
@@ -53,10 +52,10 @@ class MainWindow(QtWidgets.QMainWindow):
         }
 
         # TODO test
-        #self.ui.searchLineEdit.setText(
+        # self.ui.searchLineEdit.setText(
         #    "https://www.youtube.com/watch?v=8GW6sLrK40k&list=PLit8GzUQ7d7F0Lf2WNNL754TYQHb23b8t&t=0s&index=2")
         self.ui.searchLineEdit.setText(
-            "https://www.youtube.com/watch?v=IrjizI0wsXU")
+            "https://www.youtube.com/watch?v=kfchvCyHmsc")
         # TODO test
         self.search()
 
@@ -74,6 +73,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if d['status'] == 'finished':
             print('Done downloading, now converting ...')
 
+    @pyqtSlot()
     def search(self):
         # TODO so bad it is very slow, but it is youtube-dl problem
         with yt.YoutubeDL(self.mp3_options) as ydl:
@@ -84,6 +84,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.update_list(result)
 
+    @pyqtSlot()
     def download(self):
 
         # path = QtWidgets.QFileDialog.getExistingDirectory(
@@ -97,14 +98,13 @@ class MainWindow(QtWidgets.QMainWindow):
         path = '/home/marek/Desktop'
 
         if path and self.videos:
-
             self.thread = QThread()
-            self.ddd = Downloader(path, self.videos, self.mp3_options)
+            self.downloader = Downloader(path, self.videos, self.mp3_options)
 
-            self.ddd.moveToThread(self.thread)
-            self.thread.started.connect(self.ddd.download)
+            self.downloader.moveToThread(self.thread)
+            self.thread.started.connect(self.downloader.download)
             self.download_is_running(True)
-            self.ddd.finished.connect(lambda: self.download_is_running(False))
+            self.downloader.finished.connect(lambda: self.download_is_running(False))
 
             self.thread.start()
 
@@ -132,12 +132,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show_list()
 
+    @pyqtSlot()
     def check_all(self):
 
-        for checkbox in (x.checkbox for x in self.videos):
-            checkbox.setChecked(not self.checked)
+        for v in self.videos:
+            v.is_checked = not self.checked_all
 
-        self.checked = not self.checked
+        self.checked_all = not self.checked_all
 
         text = 'Odznacz' if self.checked else 'Zaznacz'
         self.ui.checkAllButton.setText(text)
@@ -169,7 +170,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # set the size from the item to the same of the widget
             Item.setSizeHint(Item_Widget.sizeHint())
-            Item.setFlags(Item.flags() | QtCore.Qt.ItemIsSelectable)  # TODO not working
+            # Item.setFlags(Item.flags() | QtCore.Qt.ItemIsSelectable)  # TODO not working
+            # Item.
             # I add it to the list
             self.ui.listWidget.addItem(Item)
             # self.items.append(Item)
@@ -178,6 +180,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.ui.listWidget.setItemWidget(Item, Item_Widget)
 
+    @pyqtSlot()
     def clean_list(self):
 
         self.videos = []
@@ -187,8 +190,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show_list()
 
     def download_is_running(self, is_running):
-        print(not is_running)
         self.ui.downloadButton.setEnabled(not is_running)
 
-    def jebanko(self):
-        print("jebanko")
+        if self.thread:
+            self.thread.exit()
+
+        # if not is_running:
+        #     del self.thread
+        #     self.thread = None
+        #     del self.downloader
+        #     self.downloader = None
