@@ -6,8 +6,8 @@ import youtube_dl as yt
 class Downloader(QObject):
     # Create the signal
 
-    intReady = pyqtSignal(int)
     finished = pyqtSignal()
+    error_occured = pyqtSignal(str)
 
     def __init__(self, path, videos, options, parent=None):
         super(Downloader, self).__init__(parent)
@@ -27,10 +27,13 @@ class Downloader(QObject):
         for video in self.videos:
             if video.checkbox.isChecked():
 
-                self.options['outtmpl'] = self.path + '/' + video.title + '.%(ext)s'
+                try:
+                    self.options['outtmpl'] = f'{self.path}/{video.title}.webm' #%(ext)s'
 
-                with yt.YoutubeDL(self.options) as ydl:
-                    ydl.download([video.url])
+                    with yt.YoutubeDL(self.options) as ydl:
+                        ydl.download([video.url])
+                except yt.DownloadError:
+                    self.error_occured.emit(f'Problem occured with "{video.original_title}".\nCheck connection.')
 
 
         self.finished.emit()

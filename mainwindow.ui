@@ -33,6 +33,20 @@
      <widget class="QListWidget" name="listWidget"/>
     </item>
     <item>
+     <widget class="QProgressBar" name="progressBarSingle">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="progressBarMultiple">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <item>
        <spacer name="horizontalSpacer_3">
@@ -110,6 +124,13 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="labelInformation">
+      <property name="text">
+       <string>Information comes here</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
