@@ -4,6 +4,7 @@ class Video:
         self.original_title = title
         self.duration = duration
         self.thumbnail = thumbnail
+        self.filesize = None
         self._is_checked = None
 
         self.checkbox = None

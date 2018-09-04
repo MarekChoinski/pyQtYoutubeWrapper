@@ -75,13 +75,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     class MyLogger:  # TODO
         def debug(self, msg):
-            print(msg)
+            #if msg.startswith("[download]"):
+            print("XD")
 
         def warning(self, msg):
-            print(msg)
+            print("XDD12"+msg)
 
         def error(self, msg):
-            print(msg)
+            print("XDD123"+msg)
 
     def my_hook(self, d):
         if d['status'] == 'finished':
@@ -106,9 +107,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 pp = pprint.PrettyPrinter(indent=4)
                 pp.pprint(result)
 
+                self.ui.progressBarSingle.setVisible(False)
+                self.ui.progressBarMultiple.setVisible(False)
+
                 self.update_list(result)
+
+
             except yt.DownloadError:
-                self.print_error("Download is not possible.\nCheck you internet connection or link.")
+                self.print_error(str(yt.DownloadError)) # ("Download is not possible.\nCheck you internet connection or link.")
 
     @pyqtSlot()
     def download(self):
@@ -131,6 +137,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 path = '/home/marek/Desktop'
 
                 if path and self.videos:
+                    self.ui.progressBarSingle.setVisible(False)
+                    self.ui.progressBarMultiple.setVisible(False)
+
                     self.thread = QThread()
                     self.downloader = Downloader(path, self.videos, self.get_options())
 
@@ -156,6 +165,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                    video['duration'],
                                    video['thumbnail'])
                     record.is_checked = True
+                    record.filesize = self.get_filesize(video['formats'], 'best')  # TODO now its only best quality
                     self.videos.append(record)
 
         else:
@@ -166,6 +176,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                videos['duration'],
                                videos['thumbnail'])
                 record.is_checked = True
+                record.filesize = self.get_filesize(videos['formats'], 'best')  # TODO now its only best quality
                 self.videos.append(record)
 
         self.show_list()
@@ -228,10 +239,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.videos = []
         self.checked_all = False
         self.ui.labelInformation.setVisible(False)
+        self.ui.progressBarSingle.setVisible(False)
+        self.ui.progressBarMultiple.setVisible(False)
         self.show_list()
 
     def download_is_running(self, is_running):
         self.ui.downloadButton.setEnabled(not is_running)
+        self.ui.progressBarSingle.setVisible(is_running)
+        self.ui.progressBarMultiple.setVisible(is_running)
 
         if self.thread:
             self.thread.exit()
@@ -246,3 +261,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def print_error(self, msg):
         self.ui.labelInformation.setVisible(True)
         self.ui.labelInformation.setText(msg)
+
+    def get_filesize(self, formats, choosen_format):
+        # TODO it's fake in case of MP3 files. Here is only video filesize
+        if choosen_format == 'best':
+            filesizes = [frm['filesize'] for frm in formats]
+            print('----------------'+str(max(filesizes)))
+            return max(filesizes)
+        else:
+            # TODO there is a problem in downloading videos at all
+            raise NotImplementedError
